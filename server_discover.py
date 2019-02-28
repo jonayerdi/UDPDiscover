@@ -4,17 +4,21 @@ import struct
 REPLY_PORT = 45454
 MULTICAST_GROUP = '224.0.21.132'
 MULTICAST_PORT = 54545
-MULTICAST_TTL = 2
+MULTICAST_TTL = 32
 
 ss = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
 try:
     ss.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 except AttributeError:
     pass
+try:
+    ss.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT, 1)
+except AttributeError:
+    pass
 ss.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_TTL, MULTICAST_TTL) 
 ss.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_LOOP, 1)
 ss.bind(('', MULTICAST_PORT))
-MEMBERSHIP = struct.pack("4sl", socket.inet_aton(MULTICAST_GROUP), socket.INADDR_ANY)
+MEMBERSHIP = struct.pack("!4sl", socket.inet_aton(MULTICAST_GROUP), socket.INADDR_ANY)
 ss.setsockopt(socket.IPPROTO_IP, socket.IP_ADD_MEMBERSHIP, MEMBERSHIP)
 
 while True:
